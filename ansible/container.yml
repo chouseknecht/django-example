@@ -1,0 +1,7 @@
+version: "2"
+services:
+  ansible-container:
+    command:
+      - main.yml
+  web:
+    image: "centos:7" 

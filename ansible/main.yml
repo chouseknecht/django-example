@@ -1,0 +1,47 @@
+
+- hosts: web
+  gather_facts: false
+  become: root
+  vars:
+    project_name: myexample
+  tasks:
+    - name: Install epel 
+      yum:
+        name: epel-release
+
+    - name: Install pip
+      yum: name=python-pip
+
+    - name: Install postgres devel 
+      yum: name=postgresql-devel
+
+    - name: Install development tools 
+      yum: name='@Development tools'
+
+    - name: Install python devel 
+      yum: name=python-devel
+
+    - name: Install pip packages
+      pip:
+        name: "{{ item }}"
+      with_items:
+        - Django
+        - psycopg2
+
+    - name: Create /code
+      file:
+        path: /code
+        state: directory
+
+    - name: Check if project exists 
+      stat: path="/code/{{ project_name }}"
+      register: pdir
+
+    - name: Create example project
+      command: "django-admin.py startproject {{ project_name }} ."
+      args:
+        chdir: /code
+      when: "not pdir.stat.exists"
+
+    - name: Copy settings.py
+      template: src=settings.j2 dest="/code/{{ project_name }}/settings.py"
